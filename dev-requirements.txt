@@ -1,4 +1,6 @@
 -r requirements.txt
 
 bumpversion
+coverage
+django-nose
 flake8
