@@ -13,4 +13,19 @@ INSTALLED_APPS = (
     'timetracker',
 )
 
+
+# Since we're only using the database for tests, we can make it in
+# memory to speed up the tests.
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+    }
+}
+
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
