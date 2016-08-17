@@ -1,5 +1,7 @@
 import logging
 
+from django.test import RequestFactory
+
 from timetracker import models
 
 
@@ -36,3 +38,19 @@ def create_activity(title='Test Title', start_time=None, end_time=None,
                  "start_time: %s, end_time: %s", title, start_time, end_time)
 
     return models.Activity.objects.create(**kwargs)
+
+
+class RequestTestMixin(object):
+    """Mixin for test cases that need a request factory."""
+
+    def __init__(self, *args, **kwargs):
+        """Create a `RequestFactory` instance to use within the current
+        `TestCase`.
+
+        Attributes:
+            factory (RequestFactory):
+                A factory to create `Request` instances.
+        """
+        super(RequestTestMixin, self).__init__(*args, **kwargs)
+
+        self.factory = RequestFactory()
