@@ -29,3 +29,10 @@ class Activity(models.Model):
 
         return '{}: {} - {}'.format(
             self.title, self.start_time.strftime('%Y-%M-%d %H:%m'), end_str)
+
+    @property
+    def is_active(self):
+        """bool: True if the instance has no `end_time`, False
+            otherwise.
+        """
+        return self.end_time is None

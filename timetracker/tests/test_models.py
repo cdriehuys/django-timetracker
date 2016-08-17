@@ -46,6 +46,22 @@ class TestActivityModel(TestCase):
         self.assertEqual(time, activity.start_time)
         self.assertIsNone(activity.end_time)
 
+    def test_is_active(self):
+        """Test the `Activity` model's `is_active` property.
+
+        An `Activity` with no `end_time` is active, but if it has an
+        `end_time` it is not active.
+        """
+        title = 'Test Activity'
+
+        activity = models.Activity(title=title)
+
+        self.assertTrue(activity.is_active)
+
+        activity.end_time = timezone.now()
+
+        self.assertFalse(activity.is_active)
+
     def test_string_conversion_with_end_time(self):
         """Test converting an `Activity` instance to a string.
 
