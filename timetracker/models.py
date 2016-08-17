@@ -13,3 +13,19 @@ class Activity(models.Model):
     title = models.CharField(max_length=200)
     start_time = models.DateTimeField(default=timezone.now)
     end_time = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        """Convert the instance to a string.
+
+        Returns:
+            str: A string in the format
+                "`title`: `start_time` - `end_time`", where the dates
+                are formatted like YYYY-MM-DD HH:MM.
+        """
+        if self.end_time:
+            end_str = self.end_time.strftime('%Y-%M-%d %H:%m')
+        else:
+            end_str = '(in progress)'
+
+        return '{}: {} - {}'.format(
+            self.title, self.start_time.strftime('%Y-%M-%d %H:%m'), end_str)

@@ -45,3 +45,45 @@ class TestActivityModel(TestCase):
         self.assertEqual(1, mock_now.call_count)
         self.assertEqual(time, activity.start_time)
         self.assertIsNone(activity.end_time)
+
+    def test_string_conversion_with_end_time(self):
+        """Test converting an `Activity` instance to a string.
+
+        If an `Activity` instance has an `end_time`, then its string
+        conversion should return a string in the form:
+        "<title>: <start_time> - <end_time>"
+
+        The times should be formatted as YYYY-MM-DD HH:MM
+        """
+        title = 'Test Activity'
+        start_time = timezone.now()
+        end_time = start_time + timedelta(hours=3)
+
+        expected = '{}: {} - {}'.format(
+            title,
+            start_time.strftime('%Y-%M-%d %H:%m'),
+            end_time.strftime('%Y-%M-%d %H:%m'))
+
+        activity = models.Activity(
+            title=title, start_time=start_time, end_time=end_time)
+
+        self.assertEqual(expected, str(activity))
+
+    def test_string_conversion_without_end_time(self):
+        """Test string conversion without an end time.
+
+        If an `Activity` instance doesn't have an `end_time`, then its
+        string conversion should return a string in the form:
+        "<title>: <start_time> - (in progress)"
+
+        The start time should be formatted as YYYY-MM-DD HH:MM
+        """
+        title = 'Test Activity'
+        start_time = timezone.now()
+
+        expected = '{}: {} - (in progress)'.format(
+            title, start_time.strftime('%Y-%M-%d %H:%m'))
+
+        activity = models.Activity(title=title, start_time=start_time)
+
+        self.assertEqual(expected, str(activity))
