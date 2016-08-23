@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name='django-timetracker',
-    version='0.0.0',
+    version='0.1.0',
     description='Django app that provides an API for tracking time spent.',
     long_description=readme(),
     url='http://github.com/cdriehuys/django-timetracker',
