@@ -6,3 +6,6 @@ omit =
 
     # testing utilities
     */testing_utils.py
+
+    # migrations
+    */migrations/*
