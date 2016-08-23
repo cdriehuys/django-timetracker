@@ -1,20 +1,9 @@
-import logging
-
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from rest_framework import viewsets
 
 from timetracker import models, serializers
 
 
-@api_view(['GET'])
-def activity_list_view(request, logger=None):
-    """Return a list of activities."""
-    logger = logger or logging.getLogger(__name__)
-
-    activities = models.Activity.objects.all()
-
-    logger.debug("Listing %d activities", activities.count())
-
-    serializer = serializers.ActivitySerializer(activities, many=True)
-
-    return Response(serializer.data)
+class ActivityViewSet(viewsets.ModelViewSet):
+    """View set for viewing and editing `Activity` instances."""
+    queryset = models.Activity.objects.all()
+    serializer_class = serializers.ActivitySerializer

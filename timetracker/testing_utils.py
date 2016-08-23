@@ -1,6 +1,6 @@
 import logging
 
-from django.test import RequestFactory
+from rest_framework.test import APIRequestFactory
 
 from timetracker import models
 
@@ -53,4 +53,4 @@ class RequestTestMixin(object):
         """
         super(RequestTestMixin, self).__init__(*args, **kwargs)
 
-        self.factory = RequestFactory()
+        self.factory = APIRequestFactory()
