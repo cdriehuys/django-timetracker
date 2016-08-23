@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.utils import timezone
 
 from rest_framework import status
 
@@ -122,6 +123,7 @@ class TestActivityListView(RequestTestMixin, TestCase):
         """Transform `ActivityViewSet` to a normal view function."""
         self.view = views.ActivityViewSet.as_view({
                 'get': 'list',
+                'post': 'create',
             })
 
     def test_activities(self):
@@ -141,6 +143,26 @@ class TestActivityListView(RequestTestMixin, TestCase):
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer.data, response.data)
+
+    def test_create(self):
+        """Test creating a new `Activity` instance.
+
+        Sending a POST request to the list view should create a new
+        `Activity` instance with the provided data.
+        """
+        data = {
+            'title': 'My Title',
+            'start_time': (timezone.now() - timedelta(hours=1)).isoformat(),
+            'end_time': timezone.now().isoformat(),
+        }
+
+        request = self.factory.post(self.url, data)
+        response = self.view(request)
+
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        self.assertEqual(data['title'], response.data['title'])
+        self.assertEqual(data['start_time'], response.data['start_time'])
+        self.assertEqual(data['end_time'], response.data['end_time'])
 
     def test_no_activites(self):
         """Test the view with no activities.
