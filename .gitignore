@@ -52,6 +52,7 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+*.sqlite3
 
 # Flask stuff:
 instance/
@@ -87,3 +88,7 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Sublime Text Files
+*.sublime-project
+*.sublime-workspace
