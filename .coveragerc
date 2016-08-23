@@ -6,3 +6,4 @@ omit =
 
     # testing utilities
     */testing_utils.py
+source = timetracker
