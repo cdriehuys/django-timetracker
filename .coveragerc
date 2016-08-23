@@ -9,3 +9,4 @@ omit =
 
     # migrations
     */migrations/*
+source = timetracker
