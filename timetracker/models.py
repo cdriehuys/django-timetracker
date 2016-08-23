@@ -3,6 +3,7 @@
 These models are responsible for storing and representing the data that
 is manipulated within the app.
 """
+from django.core.urlresolvers import reverse
 
 from django.db import models
 from django.utils import timezone
@@ -29,6 +30,15 @@ class Activity(models.Model):
 
         return '{}: {} - {}'.format(
             self.title, self.start_time.strftime('%Y-%M-%d %H:%m'), end_str)
+
+    def get_absolute_url(self):
+        """Return the URL of the instance's detail view.
+
+        Returns:
+            str: The URL of the instance's detail view, in the format:
+                `/activities/<pk>/`.
+        """
+        return reverse('activity-detail', kwargs={'pk': self.pk})
 
     @property
     def is_active(self):

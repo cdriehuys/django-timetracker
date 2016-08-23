@@ -1,11 +1,13 @@
 from datetime import timedelta
 
 from django.test import TestCase
+from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 import mock
 
 from timetracker import models
+from timetracker.testing_utils import create_activity
 
 
 class TestActivityModel(TestCase):
@@ -45,6 +47,16 @@ class TestActivityModel(TestCase):
         self.assertEqual(1, mock_now.call_count)
         self.assertEqual(time, activity.start_time)
         self.assertIsNone(activity.end_time)
+
+    def test_get_absolute_url(self):
+        """Test getting the absolute url of an `Activity` instance.
+
+        The returned URL should be the instance's detail view.
+        """
+        activity = create_activity()
+        expected = reverse('activity-detail', kwargs={'pk': activity.pk})
+
+        self.assertEqual(expected, activity.get_absolute_url())
 
     def test_is_active(self):
         """Test the `Activity` model's `is_active` property.
