@@ -7,7 +7,8 @@ from django.utils import timezone
 from rest_framework import status
 
 from timetracker import models, serializers, views
-from timetracker.testing_utils import RequestTestMixin, create_activity
+from timetracker.testing_utils import (
+    RequestTestMixin, create_activity, create_user)
 
 
 class TestActivityDetailView(RequestTestMixin, TestCase):
@@ -150,6 +151,7 @@ class TestActivityListView(RequestTestMixin, TestCase):
         Sending a POST request to the list view should create a new
         `Activity` instance with the provided data.
         """
+        user = create_user()
         data = {
             'title': 'My Title',
             'start_time': (timezone.now() - timedelta(hours=1)).isoformat(),
@@ -157,6 +159,7 @@ class TestActivityListView(RequestTestMixin, TestCase):
         }
 
         request = self.factory.post(self.url, data)
+        request.user = user
         response = self.view(request)
 
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)

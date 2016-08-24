@@ -1,13 +1,13 @@
 from datetime import timedelta
 
-from django.test import TestCase
 from django.core.urlresolvers import reverse
+from django.test import TestCase
 from django.utils import timezone
 
 import mock
 
 from timetracker import models
-from timetracker.testing_utils import create_activity
+from timetracker.testing_utils import create_activity, create_user
 
 
 class TestActivityModel(TestCase):
@@ -19,12 +19,16 @@ class TestActivityModel(TestCase):
         The instance's constructor should accept `start_time`,
         `end_time`, and `title` parameters.
         """
+        user = create_user()
         title = 'Test Activity'
         start_time = timezone.now()
         end_time = start_time + timedelta(hours=1)
 
         activity = models.Activity.objects.create(
-            title='Test Activity', start_time=start_time, end_time=end_time)
+            user=user,
+            title='Test Activity',
+            start_time=start_time,
+            end_time=end_time)
 
         self.assertEqual(title, activity.title)
         self.assertEqual(start_time, activity.start_time)
@@ -36,13 +40,14 @@ class TestActivityModel(TestCase):
         By default, `start_time` should be the current time, and
         `end_time` should be `None`.
         """
+        user = create_user()
         title = 'Test Activity'
         time = timezone.now()
         field = models.Activity._meta.get_field('start_time')
 
         with mock.patch.object(field, 'default', autospec=True,
                                side_effect=lambda: time) as mock_now:
-            activity = models.Activity.objects.create(title=title)
+            activity = models.Activity.objects.create(user=user, title=title)
 
         self.assertEqual(1, mock_now.call_count)
         self.assertEqual(time, activity.start_time)
@@ -66,7 +71,7 @@ class TestActivityModel(TestCase):
         """
         title = 'Test Activity'
 
-        activity = models.Activity(title=title)
+        activity = models.Activity(user=create_user(), title=title)
 
         self.assertTrue(activity.is_active)
 
@@ -93,7 +98,10 @@ class TestActivityModel(TestCase):
             end_time.strftime('%Y-%M-%d %H:%m'))
 
         activity = models.Activity(
-            title=title, start_time=start_time, end_time=end_time)
+            user=create_user(),
+            title=title,
+            start_time=start_time,
+            end_time=end_time)
 
         self.assertEqual(expected, str(activity))
 
@@ -112,6 +120,7 @@ class TestActivityModel(TestCase):
         expected = '{}: {} - (in progress)'.format(
             title, start_time.strftime('%Y-%M-%d %H:%m'))
 
-        activity = models.Activity(title=title, start_time=start_time)
+        activity = models.Activity(
+            user=create_user(), title=title, start_time=start_time)
 
         self.assertEqual(expected, str(activity))

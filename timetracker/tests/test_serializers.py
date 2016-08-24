@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from timetracker import models, serializers
-from timetracker.testing_utils import create_activity
+from timetracker.testing_utils import create_activity, create_user
 
 
 class TestActivitySerializer(TestCase):
@@ -16,6 +16,7 @@ class TestActivitySerializer(TestCase):
         Passing valid data to the serializer should allow an `Activity`
         instance to be constructed by the serializer.
         """
+        user = create_user()
         title = 'Test Activity'
         end_time = timezone.now()
         start_time = end_time - timedelta(hours=3)
@@ -30,7 +31,7 @@ class TestActivitySerializer(TestCase):
 
         self.assertTrue(serializer.is_valid())
 
-        activity = serializer.save()
+        activity = serializer.save(user=user)
 
         self.assertEqual(1, models.Activity.objects.count())
         self.assertEqual(title, activity.title)
@@ -42,6 +43,8 @@ class TestActivitySerializer(TestCase):
 
         Trying to write to a readonly field should have no effect.
         """
+        user = create_user()
+
         data = {
             'id': -4382,
             'title': 'Test Activity',
@@ -51,7 +54,7 @@ class TestActivitySerializer(TestCase):
 
         self.assertTrue(serializer.is_valid())
 
-        activity = serializer.save()
+        activity = serializer.save(user=user)
 
         self.assertEqual(data['title'], activity.title)
         self.assertNotEqual(data['id'], activity.id)
