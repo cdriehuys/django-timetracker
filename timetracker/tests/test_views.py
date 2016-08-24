@@ -167,6 +167,26 @@ class TestActivityListView(RequestTestMixin, TestCase):
         self.assertEqual(data['start_time'], response.data['start_time'])
         self.assertEqual(data['end_time'], response.data['end_time'])
 
+    def test_multiple_users(self):
+        """Test having activites created by different users.
+
+        Users should only be able to see the activities they've created.
+        """
+        user1 = create_user()
+        user2 = create_user()
+
+        activity = create_activity(user=user1)
+        create_activity(user=user2, title="Not User 1's Activity")
+
+        serializer = serializers.ActivitySerializer([activity], many=True)
+
+        request = self.factory.get(self.url)
+        request.user = user1
+        response = self.view(request)
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(serializer.data, response.data)
+
     def test_no_activites(self):
         """Test the view with no activities.
 

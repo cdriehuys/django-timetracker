@@ -9,6 +9,7 @@ INSTALLED_APPS = (
     # Django apps
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.sessions',
 
     # Third party apps
     'django_nose',
