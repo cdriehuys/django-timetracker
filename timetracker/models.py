@@ -3,26 +3,31 @@
 These models are responsible for storing and representing the data that
 is manipulated within the app.
 """
+import logging
+
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
-
-
-def _default_user():
-    """Get a default user to allow for migrations."""
-    return get_user_model().objects.create_user(username='DEFAULT_USER').id
 
 
 class Activity(models.Model):
     """An activity with a title, start time, and end time."""
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        default=_default_user)
+        blank=True,
+        null=True)
+    session = models.CharField(max_length=40, blank=True, null=True)
     title = models.CharField(max_length=200)
     start_time = models.DateTimeField(default=timezone.now)
     end_time = models.DateTimeField(blank=True, null=True)
+
+    def __init__(self, *args, **kwargs):
+        """Create a logger for the instance."""
+        super(Activity, self).__init__(*args, **kwargs)
+
+        self.logger = kwargs.pop('logger', logging.getLogger(__name__))
 
     def __str__(self):
         """Convert the instance to a string.
@@ -55,3 +60,21 @@ class Activity(models.Model):
             otherwise.
         """
         return self.end_time is None
+
+    def save(self, *args, **kwargs):
+        """Validate and save the instance to the database.
+
+        Ensures that only one of `user` or `session` is specified.
+
+        Raises:
+            ValidationError:
+                if both `user` and `session` are not `None`.
+        """
+        if self.user is not None and self.session is not None:
+            self.logger.error("Tried to create Activity with both `user` and "
+                              "`session` specified.")
+
+            raise ValidationError("Only one of `user` or `session` may be "
+                                  "specified.")
+
+        return super(Activity, self).save(*args, **kwargs)
