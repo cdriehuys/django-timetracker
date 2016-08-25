@@ -20,6 +20,11 @@ INSTALLED_APPS = (
 )
 
 
+MIDDLEWARE = (
+    'django.contrib.sessions.middleware.SessionMiddleware',
+)
+
+
 # Since we're only using the database for tests, we can make it in
 # memory to speed up the tests.
 

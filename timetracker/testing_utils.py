@@ -111,19 +111,3 @@ def create_user(username=None, password='password', email=None, logger=None):
 
     return get_user_model().objects.create_user(
         username=username, password=password, email=email)
-
-
-class RequestTestMixin(object):
-    """Mixin for test cases that need a request factory."""
-
-    def __init__(self, *args, **kwargs):
-        """Create a `RequestFactory` instance to use within the current
-        `TestCase`.
-
-        Attributes:
-            factory (RequestFactory):
-                A factory to create `Request` instances.
-        """
-        super(RequestTestMixin, self).__init__(*args, **kwargs)
-
-        self.factory = APIRequestFactory()

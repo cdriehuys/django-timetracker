@@ -1,30 +1,20 @@
 from datetime import timedelta
 
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 from django.utils import timezone
 
 from rest_framework import status
+from rest_framework.test import APITestCase
 
 from timetracker import models, serializers, views
-from timetracker.testing_utils import (
-    RequestTestMixin, create_activity, create_user)
+from timetracker.testing_utils import create_activity, create_user
 
 
-class TestActivityDetailView(RequestTestMixin, TestCase):
+class TestActivityDetailView(APITestCase):
     """Test cases for the activity detail view.
 
     This view is part of `ActivityViewSet`.
     """
-
-    def setUp(self):
-        """Create a viewset instance to test on."""
-        self.view = views.ActivityViewSet.as_view({
-                'delete': 'destroy',
-                'get': 'retrieve',
-                'patch': 'partial_update',
-                'put': 'update',
-            })
 
     def test_delete(self):
         """Test deleting an `Activity` instance.
@@ -35,8 +25,7 @@ class TestActivityDetailView(RequestTestMixin, TestCase):
         activity = create_activity()
 
         url = reverse('activity-detail', kwargs={'pk': activity.pk})
-        request = self.factory.delete(url)
-        response = self.view(request, pk=activity.pk)
+        response = self.client.delete(url)
 
         self.assertEqual(status.HTTP_204_NO_CONTENT, response.status_code)
         self.assertEqual(0, models.Activity.objects.count())
@@ -51,8 +40,7 @@ class TestActivityDetailView(RequestTestMixin, TestCase):
         serializer = serializers.ActivitySerializer(activity)
 
         url = reverse('activity-detail', kwargs={'pk': activity.pk})
-        request = self.factory.get(url)
-        response = self.view(request, pk=activity.pk)
+        response = self.client.get(url)
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer.data, response.data)
@@ -64,8 +52,7 @@ class TestActivityDetailView(RequestTestMixin, TestCase):
         return a 404 status code.
         """
         url = reverse('activity-detail', kwargs={'pk': 1})
-        request = self.factory.get(url)
-        response = self.view(request, pk=1)
+        response = self.client.get(url)
 
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
@@ -81,8 +68,7 @@ class TestActivityDetailView(RequestTestMixin, TestCase):
         }
 
         url = reverse('activity-detail', kwargs={'pk': activity.pk})
-        request = self.factory.patch(url, data)
-        response = self.view(request, pk=activity.pk)
+        response = self.client.patch(url, data)
 
         activity.refresh_from_db()
         serializer = serializers.ActivitySerializer(activity)
@@ -105,8 +91,7 @@ class TestActivityDetailView(RequestTestMixin, TestCase):
         del data['end_time']
 
         url = reverse('activity-detail', kwargs={'pk': activity.pk})
-        request = self.factory.put(url, data)
-        response = self.view(request, pk=activity.pk)
+        response = self.client.put(url, data)
 
         activity.refresh_from_db()
         serializer = serializers.ActivitySerializer(activity)
@@ -116,16 +101,9 @@ class TestActivityDetailView(RequestTestMixin, TestCase):
         self.assertEqual(data['title'], activity.title)
 
 
-class TestActivityListView(RequestTestMixin, TestCase):
+class TestActivityListView(APITestCase):
     """Test cases for the Activity list view."""
     url = reverse('activity-list')
-
-    def setUp(self):
-        """Transform `ActivityViewSet` to a normal view function."""
-        self.view = views.ActivityViewSet.as_view({
-                'get': 'list',
-                'post': 'create',
-            })
 
     def test_activities(self):
         """Test the view with activities.
@@ -139,8 +117,7 @@ class TestActivityListView(RequestTestMixin, TestCase):
         serializer = serializers.ActivitySerializer(
             [activity1, activity2], many=True)
 
-        request = self.factory.get(self.url)
-        response = self.view(request)
+        response = self.client.get(self.url)
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer.data, response.data)
@@ -158,9 +135,7 @@ class TestActivityListView(RequestTestMixin, TestCase):
             'end_time': timezone.now().isoformat(),
         }
 
-        request = self.factory.post(self.url, data)
-        request.user = user
-        response = self.view(request)
+        response = self.client.post(self.url, data)
 
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual(data['title'], response.data['title'])
@@ -175,14 +150,14 @@ class TestActivityListView(RequestTestMixin, TestCase):
         user1 = create_user()
         user2 = create_user()
 
+        self.client.force_login(user=user1)
+
         activity = create_activity(user=user1)
         create_activity(user=user2, title="Not User 1's Activity")
 
         serializer = serializers.ActivitySerializer([activity], many=True)
 
-        request = self.factory.get(self.url)
-        request.user = user1
-        response = self.view(request)
+        response = self.client.get(self.url)
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer.data, response.data)
@@ -193,11 +168,7 @@ class TestActivityListView(RequestTestMixin, TestCase):
         If there are no `Activity` instances, an empty list should be
         returned.
         """
-        request = self.factory.get(self.url)
-        response = self.view(request)
+        response = self.client.get(self.url)
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-
-        response.render()
-
         self.assertEqual([], response.data)
