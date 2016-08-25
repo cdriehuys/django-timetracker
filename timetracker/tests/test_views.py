@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from timetracker import models, serializers, views
+from timetracker import models, serializers
 from timetracker.testing_utils import create_activity, create_user
 
 
@@ -129,6 +129,9 @@ class TestActivityListView(APITestCase):
         `Activity` instance with the provided data.
         """
         user = create_user()
+
+        self.client.force_login(user=user)
+
         data = {
             'title': 'My Title',
             'start_time': (timezone.now() - timedelta(hours=1)).isoformat(),
@@ -141,6 +144,24 @@ class TestActivityListView(APITestCase):
         self.assertEqual(data['title'], response.data['title'])
         self.assertEqual(data['start_time'], response.data['start_time'])
         self.assertEqual(data['end_time'], response.data['end_time'])
+
+    def test_create_with_session(self):
+        """Test creating a new activity with an anonymous user.
+
+        If the current user is not authenticated, the activity should be
+        saved with the session info.
+        """
+        data = {
+            'title': 'My Title',
+        }
+
+        response = self.client.post(self.url, data)
+
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        self.assertEqual(data['title'], response.data['title'])
+        self.assertIsNotNone(
+            models.Activity.objects.get(
+                session=self.client.session.session_key))
 
     def test_multiple_users(self):
         """Test having activites created by different users.

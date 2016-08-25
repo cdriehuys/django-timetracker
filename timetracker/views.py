@@ -32,4 +32,16 @@ class ActivityViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Associate the current user with the created activity."""
-        serializer.save(user=self.request.user)
+        if self.request.user.is_active:
+            serializer.save(user=self.request.user)
+
+        # create session if it doesn't exist
+        if not self.request.session.exists(self.request.session.session_key):
+            self.request.session.create()
+
+        session_key = self.request.session.session_key
+
+        self.logger.debug("Creating activity for anonymous user with session "
+                          "id: %s", session_key)
+
+        serializer.save(session=session_key)
