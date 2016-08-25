@@ -1,12 +1,13 @@
 import logging
 
-from rest_framework import viewsets
+from rest_framework import permissions, viewsets
 
 from timetracker import models, serializers
 
 
 class ActivityViewSet(viewsets.ModelViewSet):
     """View set for viewing and editing `Activity` instances."""
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.ActivitySerializer
 
     def __init__(self, *args, **kwargs):
@@ -30,16 +31,4 @@ class ActivityViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Associate the current user with the created activity."""
-        if self.request.user.is_active:
-            serializer.save(user=self.request.user)
-
-        # create session if it doesn't exist
-        if not self.request.session.exists(self.request.session.session_key):
-            self.request.session.create()
-
-        session_key = self.request.session.session_key
-
-        self.logger.debug("Creating activity for anonymous user with session "
-                          "id: %s", session_key)
-
-        serializer.save(session=session_key)
+        serializer.save(user=self.request.user)
