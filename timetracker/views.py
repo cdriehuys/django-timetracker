@@ -23,12 +23,10 @@ class ActivityViewSet(viewsets.ModelViewSet):
                 A `QuerySet` containing the list of `Activity` instances
                 owned by the user making the current request.
         """
-        q = models.Activity.objects.all()
+        self.logger.debug(
+            "Filtering activities for user '%s'", self.request.user)
 
-        if self.request.user.is_active:
-            return q.filter(user=self.request.user)
-
-        return q.filter(session=self.request.session.session_key)
+        return models.Activity.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         """Associate the current user with the created activity."""

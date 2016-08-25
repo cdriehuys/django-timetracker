@@ -7,8 +7,8 @@ from rest_framework.test import APIRequestFactory
 from timetracker import models
 
 
-def create_activity(user=None, session=None, title='Test Title',
-                    start_time=None, end_time=None, logger=None):
+def create_activity(user=None, title='Test Title', start_time=None,
+                    end_time=None, logger=None):
     """Create an `Activity` instance for testing purposes.
 
     The fields are given default values so that instances can be easily
@@ -17,11 +17,7 @@ def create_activity(user=None, session=None, title='Test Title',
     Args:
         user (User,optional):
             The user to associate the activity with. If one is not
-            provided, and no session is given, a new user is created.
-        session (str,optional):
-            Used to associate an anonymous user with an `Activity`
-            instance. If one is not provided, the user attribute will be
-            used instead.
+            provided, a new user is created.
         title (str,optional):
             The title of the activity.
         start_time (datetime,optional):
@@ -40,14 +36,9 @@ def create_activity(user=None, session=None, title='Test Title',
         'title': title,
     }
 
-    if user is None and session is None:
+    if user is None:
         user = create_user()
-
-    if user is not None:
-        kwargs['user'] = user
-
-    if session is not None:
-        kwargs['session'] = session
+    kwargs['user'] = user
 
     if start_time is not None:
         kwargs['start_time'] = start_time
@@ -55,7 +46,8 @@ def create_activity(user=None, session=None, title='Test Title',
     if end_time is not None:
         kwargs['end_time'] = end_time
 
-    logger.debug("Creating new test activity with params: %s", kwargs)
+    logger.debug("Creating new test activity with params title: %s, "
+                 "start_time: %s, end_time: %s", title, start_time, end_time)
 
     return models.Activity.objects.create(**kwargs)
 

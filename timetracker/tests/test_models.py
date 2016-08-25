@@ -1,7 +1,5 @@
 from datetime import timedelta
 
-from django.contrib.sessions.models import Session
-from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
@@ -80,39 +78,6 @@ class TestActivityModel(TestCase):
         activity.end_time = timezone.now()
 
         self.assertFalse(activity.is_active)
-
-    def test_session_association(self):
-        """Test associating an `Activity` instance with a session.
-
-        Session keys should be useable as a method of distinguishing
-        `Activity` instances and their owners.
-        """
-        session = Session(session_key='random_key')
-
-        activity = models.Activity.objects.create(
-            session=session.session_key,
-            title='Test Activity')
-
-        self.assertEqual(
-            activity, models.Activity.objects.get(session=session.session_key))
-
-    def test_session_and_user(self):
-        """Test passing session and user attributes to an activity.
-
-        Passing both the `session` and `user` attributes when creating
-        a new `Activity` instance should result in a `ValidationError`
-        being raised.
-        """
-        session = Session(session_key='my_key')
-        user = create_user()
-
-        with self.assertRaises(ValidationError):
-            models.Activity.objects.create(
-                user=user,
-                session=session,
-                title='Activity')
-
-        self.assertEqual(0, models.Activity.objects.count())
 
     def test_string_conversion_with_end_time(self):
         """Test converting an `Activity` instance to a string.
